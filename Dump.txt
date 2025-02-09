@@ -1,0 +1,480 @@
+Чтобы включить Actuator и получить доступ к heapdump в Spring Boot приложении, выполните следующие шаги:
+
+1. Добавьте зависимость spring-boot-starter-actuator
+Добавьте зависимость spring-boot-starter-actuator в ваш pom.xml (если используете Maven) или build.gradle (если используете Gradle).
+
+Maven:
+
+xml
+Copy
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+Run HTML
+Gradle:
+
+groovy
+Copy
+implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+2. Настройте Actuator в application.properties или application.yml
+Включите эндпоинты Actuator и настройте их видимость. По умолчанию, только эндпоинты health и info доступны. Чтобы включить heapdump, нужно явно указать его в конфигурации.
+
+application.properties:
+
+properties
+Copy
+# Включите все эндпоинты Actuator
+management.endpoints.web.exposure.include=*
+
+# Включите эндпоинт heapdump
+management.endpoint.heapdump.enabled=true
+application.yml:
+
+yaml
+Copy
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    heapdump:
+      enabled: true
+
+3. Получите доступ к heapdump
+После запуска приложения, вы можете получить дамп кучи, обратившись к эндпоинту /actuator/heapdump. Например, если ваше приложение запущено на localhost:8080, то дамп кучи можно получить по адресу:
+
+Copy
+http://localhost:8080/actuator/heapdump
+Этот запрос вернет файл .hprof, который можно открыть с помощью инструментов для анализа кучи, таких как Eclipse MAT или VisualVM.
+
+4. (Опционально) Настройка безопасности
+Если вы хотите защитить эндпоинты Actuator, вы можете добавить Spring Security и настроить доступ к ним.
+
+Maven:
+
+xml
+Copy
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+Run HTML
+Gradle:
+
+groovy
+Copy
+implementation 'org.springframework.boot:spring-boot-starter-security'
+Затем настройте безопасность в application.properties или application.yml:
+
+application.properties:
+
+properties
+Copy
+spring.security.user.name=admin
+spring.security.user.password=password
+application.yml:
+
+yaml
+Copy
+spring:
+  security:
+    user:
+      name: admin
+      password: password
+Теперь доступ к эндпоинтам Actuator будет требовать аутентификации.
+
+Заключение
+Теперь ваше Spring Boot приложение настроено для предоставления дампа кучи через Actuator. Вы можете использовать этот дамп для анализа проблем с памятью в вашем приложении.
+
+
+++++
+
+Thread dump (дамп потоков)
+
+Thread dump (дамп потоков) — это моментальный снимок состояния всех потоков (threads) в Java-приложении на определенный момент времени. Он содержит информацию о текущем состоянии каждого потока, включая:
+
+Имя потока (thread name).
+
+Идентификатор потока (thread ID).
+
+Приоритет потока (priority).
+
+Состояние потока (state), например:
+
+RUNNABLE — поток выполняется или готов к выполнению.
+
+BLOCKED — поток заблокирован, ожидая монитор.
+
+WAITING — поток ожидает, пока другой поток не выполнит определенное действие.
+
+TIMED_WAITING — поток ожидает в течение определенного времени.
+
+TERMINATED — поток завершил выполнение.
+
+Стек вызовов (stack trace) — последовательность методов, которые выполняются в потоке на момент создания дампа.
+
+Для чего нужен Thread Dump?
+Thread dump полезен для диагностики проблем в многопоточных приложениях, таких как:
+
+Деадлоки (deadlocks) — ситуации, когда два или более потоков блокируют друг друга, ожидая ресурсы.
+
+Утечки потоков — когда потоки создаются, но не завершаются, что приводит к исчерпанию ресурсов.
+
+Долгие операции — выявление потоков, которые выполняются слишком долго.
+
+Производительность — анализ состояния потоков для поиска узких мест в производительности.
+
+Как получить Thread Dump?
+1. С помощью командной строки (jstack)
+Утилита jstack входит в состав JDK и позволяет получить дамп потоков для запущенного Java-процесса.
+
+Найдите идентификатор процесса (PID) вашего Java-приложения:
+
+bash
+Copy
+jps
+Пример вывода:
+
+Copy
+12345 MyApp
+Создайте thread dump с помощью jstack:
+
+bash
+Copy
+jstack 12345 > thread_dump.txt
+Дамп будет сохранен в файл thread_dump.txt.
+
+2. С помощью Spring Boot Actuator
+Если вы используете Spring Boot, можно включить эндпоинт threaddump через Actuator.
+
+Добавьте зависимость spring-boot-starter-actuator (если еще не добавлена):
+
+xml
+Copy
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+Run HTML
+Включите эндпоинт threaddump в application.properties или application.yml:
+
+properties
+Copy
+management.endpoints.web.exposure.include=threaddump
+management.endpoint.threaddump.enabled=true
+Получите thread dump через HTTP-запрос:
+
+Copy
+http://localhost:8080/actuator/threaddump
+Ответ будет в формате JSON, содержащем информацию о всех потоках.
+
+3. С помощью VisualVM или JConsole
+Эти инструменты предоставляют графический интерфейс для анализа Java-приложений.
+
+Запустите VisualVM или JConsole.
+
+Подключитесь к вашему Java-процессу.
+
+В VisualVM перейдите на вкладку "Threads" и нажмите "Thread Dump".
+
+В JConsole выберите вкладку "Threads" и нажмите "Thread Dump".
+
+4. Программно (через код)
+Вы можете программно создать thread dump в Java-коде:
+
+java
+Copy
+Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+for (Map.Entry<Thread, StackTraceElement[]> entry : threads.entrySet()) {
+    Thread thread = entry.getKey();
+    StackTraceElement[] stackTrace = entry.getValue();
+    System.out.println("Thread: " + thread.getName());
+    for (StackTraceElement element : stackTrace) {
+        System.out.println("\t" + element);
+    }
+}
+Как анализировать Thread Dump?
+Поиск деадлоков:
+
+В thread dump деадлоки обычно помечены как BLOCKED с указанием, какой поток и монитор блокируют друг друга.
+
+Ищите строки с deadlock или BLOCKED.
+
+Анализ состояния потоков:
+
+Проверьте, сколько потоков находится в состоянии RUNNABLE, BLOCKED, WAITING и т.д.
+
+Если много потоков в состоянии BLOCKED, это может указывать на проблемы с синхронизацией.
+
+Использование инструментов:
+
+Eclipse MAT — для анализа thread dump.
+
+VisualVM — для визуализации потоков.
+
+Online-анализаторы — например, FastThread.
+
+Пример Thread Dump
+Пример фрагмента thread dump:
+
+Copy
+"main" #1 prio=5 os_prio=0 tid=0x00007f8b4c00a800 nid=0x1 waiting on condition [0x00007f8b4d0e9000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+        at java.lang.Thread.sleep(Native Method)
+        at com.example.MyApp.main(MyApp.java:10)
+
+"Thread-2" #12 prio=5 os_prio=0 tid=0x00007f8b4c0b2000 nid=0x1e runnable [0x00007f8b4c0b1000]
+   java.lang.Thread.State: RUNNABLE
+        at java.net.SocketInputStream.socketRead0(Native Method)
+        at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
+        at java.net.SocketInputStream.read(SocketInputStream.java:171)
+Заключение
+Thread dump — это мощный инструмент для диагностики многопоточных приложений. Он помогает выявлять деадлоки, утечки потоков и другие проблемы, связанные с многопоточностью. Используйте его в сочетании с инструментами анализа для более глубокого понимания состояния вашего приложения.
+
+
+++++
+
+
+Можно сохранить thread dump так же, как и heapdump через Spring Boot Actuator. Однако, в отличие от heapdump, который возвращает бинарный файл (.hprof), threaddump возвращает данные в формате JSON. Если вам нужно сохранить thread dump в файл, вы можете сделать это вручную или автоматизировать процесс.
+
+1. Сохранение Thread Dump через Actuator
+Шаги:
+Убедитесь, что вы включили эндпоинт threaddump в Actuator (как описано ранее):
+
+properties
+Copy
+management.endpoints.web.exposure.include=threaddump
+management.endpoint.threaddump.enabled=true
+Получите thread dump через HTTP-запрос:
+
+Copy
+http://localhost:8080/actuator/threaddump
+Сохраните ответ в файл:
+
+Вручную: Скопируйте содержимое ответа (JSON) и сохраните его в файл, например, thread_dump.json.
+
+Автоматически: Используйте инструменты командной строки, такие как curl или wget, чтобы сохранить ответ в файл.
+
+Пример с использованием curl:
+
+bash
+Copy
+curl -o thread_dump.json http://localhost:8080/actuator/threaddump
+2. Программное сохранение Thread Dump
+Если вы хотите автоматизировать процесс сохранения thread dump, вы можете написать небольшой скрипт на Java или использовать сторонние библиотеки.
+
+Пример на Java:
+java
+Copy
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class ThreadDumpSaver {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        String actuatorUrl = "http://localhost:8080/actuator/threaddump";
+        String outputFile = "thread_dump.json";
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(actuatorUrl))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        try (FileWriter writer = new FileWriter(outputFile)) {
+            writer.write(response.body());
+            System.out.println("Thread dump saved to " + outputFile);
+        }
+    }
+}
+Этот код отправляет HTTP-запрос к эндпоинту threaddump и сохраняет ответ в файл thread_dump.json.
+
+3. Использование Spring Boot Actuator для автоматического сохранения
+Если вы хотите, чтобы thread dump автоматически сохранялся при определенных условиях (например, при ошибке), вы можете создать кастомный эндпоинт или использовать ApplicationListener.
+
+Пример кастомного эндпоинта:
+java
+Copy
+import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.stereotype.Component;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+
+@Component
+@Endpoint(id = "custom-threaddump")
+public class CustomThreadDumpEndpoint {
+
+    @ReadOperation
+    public String saveThreadDump() {
+        String outputFile = "custom_thread_dump.txt";
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(true, true);
+
+        try (FileWriter writer = new FileWriter(outputFile)) {
+            for (ThreadInfo threadInfo : threadInfos) {
+                writer.write(threadInfo.toString());
+                writer.write("\n");
+            }
+            return "Thread dump saved to " + outputFile;
+        } catch (IOException e) {
+            return "Failed to save thread dump: " + e.getMessage();
+        }
+    }
+}
+Теперь вы можете получить и сохранить thread dump, обратившись к кастомному эндпоинту:
+
+Copy
+http://localhost:8080/actuator/custom-threaddump
+4. Сохранение Thread Dump через инструменты JDK
+Если вы не хотите использовать Actuator, вы можете сохранить thread dump с помощью утилит JDK, таких как jstack.
+
+Пример:
+bash
+Copy
+jstack <PID> > thread_dump.txt
+Где <PID> — идентификатор процесса вашего Java-приложения.
+
+5. Сохранение Thread Dump через VisualVM или JConsole
+Если вы используете VisualVM или JConsole, вы можете сохранить thread dump вручную:
+
+В VisualVM: Перейдите на вкладку "Threads", нажмите "Thread Dump", затем сохраните результат в файл.
+
+В JConsole: Перейдите на вкладку "Threads", нажмите "Thread Dump", затем сохраните результат.
+
+Заключение
+Thread dump можно сохранить так же, как и heapdump, но в отличие от heapdump, он возвращает данные в формате JSON или текстовом формате. Вы можете сохранить его вручную через HTTP-запрос, автоматизировать процесс с помощью Java-кода или использовать инструменты JDK, такие как jstack. Если вам нужно автоматическое сохранение, рассмотрите возможность создания кастомного эндпоинта или использования Spring Boot Actuator.
+
+
+++++
+
+
+
+В Java существует несколько видов сборщиков мусора (Garbage Collectors, GC), каждый из которых оптимизирован для разных сценариев использования. Выбор подходящего GC зависит от требований к производительности, задержкам (latency) и пропускной способности (throughput) вашего приложения.
+
+Основные виды сборщиков мусора в Java
+1. Serial Garbage Collector
+Тип: Однопоточный.
+
+Как работает: Использует один поток для выполнения всех операций сборки мусора. Останавливает все потоки приложения (Stop-The-World, STW) на время выполнения GC.
+
+Использование: Подходит для приложений с небольшим объемом данных и однопоточных окружений (например, клиентские приложения или окружения с ограниченными ресурсами).
+
+Активация:
+
+bash
+Copy
+-XX:+UseSerialGC
+2. Parallel Garbage Collector (Throughput Collector)
+Тип: Многопоточный.
+
+Как работает: Использует несколько потоков для ускорения сборки мусора. Также останавливает все потоки приложения (STW).
+
+Использование: Оптимизирован для увеличения пропускной способности (throughput) и подходит для многопоточных приложений с большим объемом данных.
+
+Активация:
+
+bash
+Copy
+-XX:+UseParallelGC
+3. G1 Garbage Collector (Garbage-First)
+Тип: Многопоточный, инкрементальный.
+
+Как работает: Разделяет кучу (heap) на регионы (regions) и собирает мусор в фоновом режиме, минимизируя паузы (STW). Оптимизирован для работы с большими кучами (более 4 ГБ).
+
+Использование: Подходит для приложений с большим объемом памяти и низкими требованиями к задержкам (low latency).
+
+Активация:
+
+bash
+Copy
+-XX:+UseG1GC
+4. Z Garbage Collector (ZGC)
+Тип: Многопоточный, низколатентный.
+
+Как работает: Использует сложные алгоритмы для минимизации пауз (STW), даже при работе с очень большими кучами (терабайты). Паузы обычно не превышают 10 мс.
+
+Использование: Подходит для приложений с очень большими объемами памяти и строгими требованиями к задержкам (например, финансовые системы, реального времени).
+
+Активация:
+
+bash
+Copy
+-XX:+UseZGC
+5. Shenandoah Garbage Collector
+Тип: Многопоточный, низколатентный.
+
+Как работает: Как и ZGC, минимизирует паузы (STW) за счет выполнения большей части работы в фоновом режиме. Паузы обычно не превышают 10 мс.
+
+Использование: Подходит для приложений с низкими требованиями к задержкам и большими объемами памяти.
+
+Активация:
+
+bash
+Copy
+-XX:+UseShenandoahGC
+6. CMS Garbage Collector (Concurrent Mark Sweep)
+Тип: Многопоточный, низколатентный (устаревший).
+
+Как работает: Выполняет большую часть работы параллельно с выполнением приложения, минимизируя паузы (STW). Однако может вызывать фрагментацию памяти.
+
+Использование: Ранее использовался для приложений с низкими требованиями к задержкам, но сейчас считается устаревшим и удален в Java 14.
+
+Активация (до Java 14):
+
+bash
+Copy
+-XX:+UseConcMarkSweepGC
+7. Epsilon Garbage Collector
+Тип: Нет сборки мусора.
+
+Как работает: Не выполняет сборку мусора. Память выделяется до тех пор, пока не закончится, после чего приложение завершается.
+
+Использование: Подходит для тестирования и приложений с очень коротким временем жизни, где сборка мусора не требуется.
+
+Активация:
+
+bash
+Copy
+-XX:+UseEpsilonGC
+Сравнение сборщиков мусора
+Сборщик	Пропускная способность	Задержки (Latency)	Память	Подходящие сценарии
+Serial GC	Низкая	Высокие	Малые	Однопоточные приложения, клиентские приложения
+Parallel GC	Высокая	Средние	Средние	Многопоточные приложения с большими кучами
+G1 GC	Высокая	Низкие	Большие	Приложения с большими кучами и низкими задержками
+ZGC	Высокая	Очень низкие	Очень большие	Приложения с терабайтами памяти и строгими требованиями к задержкам
+Shenandoah GC	Высокая	Очень низкие	Большие	Приложения с низкими задержками и большими кучами
+CMS GC (устаревший)	Высокая	Низкие	Большие	Устаревший, не рекомендуется к использованию
+Epsilon GC	Нет сборки мусора	Нет пауз	Любая	Тестирование, короткоживущие приложения
+Как выбрать подходящий GC?
+Низкие задержки (Low Latency):
+
+Используйте ZGC или Shenandoah GC, если у вас строгие требования к задержкам и большие объемы памяти.
+
+Используйте G1 GC, если у вас средние требования к задержкам.
+
+Высокая пропускная способность (High Throughput):
+
+Используйте Parallel GC, если задержки не критичны, но важна максимальная производительность.
+
+Ограниченные ресурсы:
+
+Используйте Serial GC, если у вас небольшое приложение с ограниченными ресурсами.
+
+Тестирование и короткоживущие приложения:
+
+Используйте Epsilon GC, если сборка мусора не требуется.
+
+Заключение
+Выбор сборщика мусора зависит от требований вашего приложения. Для современных приложений с большими объемами памяти и низкими задержками рекомендуется использовать ZGC или Shenandoah GC. Для приложений с высокими требованиями к пропускной способности подойдет Parallel GC. Если вы только начинаете, G1 GC — это хороший выбор по умолчанию.
